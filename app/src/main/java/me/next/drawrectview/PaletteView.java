@@ -27,8 +27,10 @@ public class PaletteView extends View {
     private int moveY;
     private int deltaX;
     private int deltaY;
+    private int lastMoveX;
+    private int lastMoveY;
 
-    private boolean isTouchingSpecificArea = false;
+    private boolean isTouchingSpecificArea = false; //拖拽选定视图标记位
 
     Rect mSpecificRect = new Rect();
     Rect mSpecificBorderRect = new Rect();
@@ -91,6 +93,8 @@ public class PaletteView extends View {
             case MotionEvent.ACTION_DOWN:
                 downX = (int) event.getX();
                 downY = (int) event.getY();
+                moveX = 0;
+                moveY = 0;
                 Log.e(TAG, "downX : " + downX + " --- downY : " + downY);
 
                 //触摸在之前绘制的区域
@@ -99,21 +103,26 @@ public class PaletteView extends View {
             case MotionEvent.ACTION_MOVE:
                 moveX = (int) event.getX();
                 moveY = (int) event.getY();
+
                 Log.e(TAG, "moveX : " + moveX + " --- moveY : " + moveY);
                 if (isTouchingSpecificArea) {
-                    deltaX = moveX - downX;
-                    deltaY = moveY - downY;
-                }
 
-                break;
-            case MotionEvent.ACTION_UP:
-                if (isTouchingSpecificArea) {
+                    deltaX = moveX - (lastMoveX == 0 ? downX : lastMoveX);
+                    deltaY = moveY - (lastMoveY == 0 ? downY : lastMoveY);
+
+                    lastMoveX = moveX;
+                    lastMoveY = moveY;
+
                     mSpecificRect.set(
                             mSpecificRect.left + deltaX,
                             mSpecificRect.top + deltaY,
                             mSpecificRect.right + deltaX,
                             mSpecificRect.bottom + deltaY);
-                } else {
+                }
+
+                break;
+            case MotionEvent.ACTION_UP:
+                if (!isTouchingSpecificArea) {
                     mSpecificRect.set(downX, downY, moveX, moveY);
                 }
                 isTouchingSpecificArea = false;
@@ -121,6 +130,8 @@ public class PaletteView extends View {
                 downY = 0;
                 moveX = 0;
                 moveY = 0;
+                lastMoveX = 0;
+                lastMoveY = 0;
                 break;
             case MotionEvent.ACTION_CANCEL:
                 break;
