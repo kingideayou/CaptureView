@@ -20,6 +20,7 @@ public class PaletteView extends View {
 
     private static final String TAG = "PaletteView";
     private static final int BORDER_STROKE_WIDTH = 2;//dp
+    private static final int MIN_AREA_HEIGHT = 10;//dp
 
     private int downX;
     private int downY;
@@ -118,6 +119,8 @@ public class PaletteView extends View {
                             mSpecificRect.top + deltaY,
                             mSpecificRect.right + deltaX,
                             mSpecificRect.bottom + deltaY);
+                } else {
+                    mSpecificRect.set(downX, downY, moveX, moveY);
                 }
 
                 break;
