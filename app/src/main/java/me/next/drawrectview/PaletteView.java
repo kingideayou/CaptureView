@@ -32,6 +32,7 @@ public class PaletteView extends View {
     private int lastMoveY;
 
     private boolean isTouchingSpecificArea = false; //拖拽选定视图标记位
+    private int minHeight;
 
     Rect mSpecificRect = new Rect();
     Rect mSpecificBorderRect = new Rect();
@@ -49,6 +50,7 @@ public class PaletteView extends View {
 
     public PaletteView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        minHeight = (int) ScreenUtils.dipToPixels(getContext(), MIN_AREA_HEIGHT);
     }
 
     @Override
@@ -99,6 +101,7 @@ public class PaletteView extends View {
                 Log.e(TAG, "downX : " + downX + " --- downY : " + downY);
 
                 //触摸在之前绘制的区域
+                Log.e(TAG, "SpecificRect : " + mSpecificRect.left + " - " + mSpecificRect.top + " - " + mSpecificRect.right + " - " + mSpecificRect.bottom);
                 isTouchingSpecificArea = mSpecificRect.contains(downX, downY);
                 break;
             case MotionEvent.ACTION_MOVE:
@@ -120,14 +123,11 @@ public class PaletteView extends View {
                             mSpecificRect.right + deltaX,
                             mSpecificRect.bottom + deltaY);
                 } else {
-                    mSpecificRect.set(downX, downY, moveX, moveY);
+                    mSpecificRect.set(Math.min(downX, moveX), Math.min(downY, moveY), Math.max(downX, moveX), Math.max(downY, moveY));
                 }
 
                 break;
             case MotionEvent.ACTION_UP:
-                if (!isTouchingSpecificArea) {
-                    mSpecificRect.set(downX, downY, moveX, moveY);
-                }
                 isTouchingSpecificArea = false;
                 downX = 0;
                 downY = 0;
