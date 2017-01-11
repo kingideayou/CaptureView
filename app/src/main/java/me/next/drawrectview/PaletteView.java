@@ -2,6 +2,7 @@ package me.next.drawrectview;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
@@ -18,15 +19,22 @@ import android.view.View;
 public class PaletteView extends View {
 
     private static final String TAG = "PaletteView";
+    private static final int BORDER_STROKE_WIDTH = 2;//dp
+
     private int downX;
     private int downY;
     private int moveX;
     private int moveY;
+    private int deltaX;
+    private int deltaY;
+
+    private boolean isTouchingSpecificArea = false;
 
     Rect mSpecificRect = new Rect();
+    Rect mSpecificBorderRect = new Rect();
     Paint mPaint = new Paint();
     Paint mSpecificAreaPaint = new Paint();
-    Canvas mCanvas = new Canvas();
+    Paint mSpecificAreaBorderPaint = new Paint();
 
     public PaletteView(Context context) {
         this(context, null);
@@ -64,6 +72,17 @@ public class PaletteView extends View {
         mSpecificAreaPaint.setAntiAlias(true);
         canvas.drawRect(mSpecificRect, mSpecificAreaPaint);
 
+        mSpecificBorderRect.set(
+                mSpecificRect.left - 1,
+                mSpecificRect.top - 1,
+                mSpecificRect.right + 1,
+                mSpecificRect.bottom + 1);
+
+        mSpecificAreaBorderPaint.setStyle(Paint.Style.STROKE);
+        mSpecificAreaBorderPaint.setColor(Color.BLACK);
+        mSpecificAreaBorderPaint.setStrokeWidth(ScreenUtils.dipToPixels(getContext(), BORDER_STROKE_WIDTH));
+        canvas.drawRect(mSpecificBorderRect, mSpecificAreaBorderPaint);
+
     }
 
     @Override
@@ -73,14 +92,31 @@ public class PaletteView extends View {
                 downX = (int) event.getX();
                 downY = (int) event.getY();
                 Log.e(TAG, "downX : " + downX + " --- downY : " + downY);
+
+                //触摸在之前绘制的区域
+                isTouchingSpecificArea = mSpecificRect.contains(downX, downY);
                 break;
             case MotionEvent.ACTION_MOVE:
                 moveX = (int) event.getX();
                 moveY = (int) event.getY();
                 Log.e(TAG, "moveX : " + moveX + " --- moveY : " + moveY);
+                if (isTouchingSpecificArea) {
+                    deltaX = moveX - downX;
+                    deltaY = moveY - downY;
+                }
+
                 break;
             case MotionEvent.ACTION_UP:
-                mSpecificRect.set(downX, downY, moveX, moveY);
+                if (isTouchingSpecificArea) {
+                    mSpecificRect.set(
+                            mSpecificRect.left + deltaX,
+                            mSpecificRect.top + deltaY,
+                            mSpecificRect.right + deltaX,
+                            mSpecificRect.bottom + deltaY);
+                } else {
+                    mSpecificRect.set(downX, downY, moveX, moveY);
+                }
+                isTouchingSpecificArea = false;
                 downX = 0;
                 downY = 0;
                 moveX = 0;
