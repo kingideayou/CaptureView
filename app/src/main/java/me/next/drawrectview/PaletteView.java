@@ -125,9 +125,14 @@ public class PaletteView extends View {
                 } else {
                     mSpecificRect.set(Math.min(downX, moveX), Math.min(downY, moveY), Math.max(downX, moveX), Math.max(downY, moveY));
                 }
-
                 break;
             case MotionEvent.ACTION_UP:
+                if (!isTouchingSpecificArea) { //处理点击事件 & 对绘制区域最小值进行限制
+                    if (moveX == 0 || moveY == 0
+                            || Math.abs(moveX - downX) < minHeight || Math.abs(moveY - downY) < minHeight) {
+                        mSpecificRect.set(0, 0, 0, 0);
+                    }
+                }
                 isTouchingSpecificArea = false;
                 downX = 0;
                 downY = 0;
