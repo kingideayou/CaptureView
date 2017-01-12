@@ -110,6 +110,7 @@ public class PaletteView extends View {
 
         if (showMenuBar) {
             canvas.drawBitmap(okButtonBitmap, null, mOkButtonRect, mPaint);
+            canvas.drawBitmap(cancelButtonBitmap, null, mCancelButtonRect, mPaint);
         }
 
     }
@@ -153,6 +154,12 @@ public class PaletteView extends View {
                             mOkButtonRect.right + deltaX,
                             mOkButtonRect.bottom + deltaY);
 
+                    mCancelButtonRect.set(
+                            mCancelButtonRect.left + deltaX,
+                            mCancelButtonRect.top + deltaY,
+                            mCancelButtonRect.right + deltaX,
+                            mCancelButtonRect.bottom + deltaY);
+
                 } else {
                     mSpecificRect.set(Math.min(downX, moveX), Math.min(downY, moveY), Math.max(downX, moveX), Math.max(downY, moveY));
                 }
@@ -174,6 +181,12 @@ public class PaletteView extends View {
                                 mSpecificRect.right - buttonWidth,
                                 mSpecificRect.bottom,
                                 mSpecificRect.right,
+                                mSpecificRect.bottom + buttonHeight);
+
+                        mCancelButtonRect.set(
+                                mSpecificRect.right - buttonWidth * 2,
+                                mSpecificRect.bottom,
+                                mSpecificRect.right - buttonWidth,
                                 mSpecificRect.bottom + buttonHeight);
                     }
                 } else { //移动绘制视图
