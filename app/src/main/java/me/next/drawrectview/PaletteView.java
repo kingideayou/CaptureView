@@ -79,6 +79,9 @@ public class PaletteView extends View {
     int currentRight;
     int currentBottom;
 
+    int mScreenHeight;
+    int mScreenWidth;
+
     @IntDef({BUTTON_NONE, BUTTON_LEFT_TOP, BUTTON_RIGHT_TOP, BUTTON_LEFT_BOTTOM, BUTTON_RIGHT_BOTTOM})
     @Retention(RetentionPolicy.SOURCE)
     public @interface CurrentButton {}
@@ -96,14 +99,20 @@ public class PaletteView extends View {
         minHeight = (int) ScreenUtils.dipToPixels(getContext(), MIN_AREA_HEIGHT);
         mButtonRadius = (int) ScreenUtils.dipToPixels(getContext(), BUTTON_RADIUS);
 
-//        buttonHeight = (int) ScreenUtils.dipToPixels(getContext(), DEFAULT_BUTTON_HEIGHT);
-
         okButtonBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.check_white);
         cancelButtonBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.close_white);
 
         buttonHeight = okButtonBitmap.getHeight();
         buttonWidth = okButtonBitmap.getWidth();
 
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        mScreenWidth = MeasureSpec.getSize(widthMeasureSpec);
+        mScreenHeight = MeasureSpec.getSize(heightMeasureSpec);
+        this.setMeasuredDimension(mScreenWidth, mScreenHeight);
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
     @Override
@@ -217,18 +226,7 @@ public class PaletteView extends View {
                             mSpecificRect.right + deltaX,
                             mSpecificRect.bottom + deltaY);
 
-                    mOkButtonRect.set(
-                            mOkButtonRect.left + deltaX,
-                            mOkButtonRect.top + deltaY,
-                            mOkButtonRect.right + deltaX,
-                            mOkButtonRect.bottom + deltaY);
-
-                    mCancelButtonRect.set(
-                            mCancelButtonRect.left + deltaX,
-                            mCancelButtonRect.top + deltaY,
-                            mCancelButtonRect.right + deltaX,
-                            mCancelButtonRect.bottom + deltaY);
-
+                    updateMenuBarLocation();
                     updateZoomButtonLocation();
 
                 } else {
@@ -299,17 +297,47 @@ public class PaletteView extends View {
     }
 
     private void updateMenuBarLocation() {
-        mOkButtonRect.set(
-                mSpecificRect.right - buttonWidth,
-                mSpecificRect.bottom,
-                mSpecificRect.right,
-                mSpecificRect.bottom + buttonHeight);
 
-        mCancelButtonRect.set(
-                mSpecificRect.right - buttonWidth * 2,
-                mSpecificRect.bottom,
-                mSpecificRect.right - buttonWidth,
-                mSpecificRect.bottom + buttonHeight);
+        int topLocation = mSpecificRect.top;
+        int bottomLocation = mSpecificRect.bottom;
+
+        if (mScreenHeight - bottomLocation >= buttonHeight) {//底部有足够空间
+            mOkButtonRect.set(
+                    mSpecificRect.right - buttonWidth,
+                    mSpecificRect.bottom,
+                    mSpecificRect.right,
+                    mSpecificRect.bottom + buttonHeight);
+
+            mCancelButtonRect.set(
+                    mSpecificRect.right - buttonWidth * 2,
+                    mSpecificRect.bottom,
+                    mSpecificRect.right - buttonWidth,
+                    mSpecificRect.bottom + buttonHeight);
+        } else if (topLocation > buttonHeight) {
+            mOkButtonRect.set( //顶部有足够空间
+                    mSpecificRect.right - buttonWidth,
+                    mSpecificRect.top - buttonHeight,
+                    mSpecificRect.right,
+                    mSpecificRect.top);
+
+            mCancelButtonRect.set(
+                    mSpecificRect.right - buttonWidth * 2,
+                    mSpecificRect.top - buttonHeight,
+                    mSpecificRect.right - buttonWidth,
+                    mSpecificRect.top);
+        } else {
+            mOkButtonRect.set(
+                    mSpecificRect.right - buttonWidth,
+                    mSpecificRect.bottom - buttonHeight,
+                    mSpecificRect.right,
+                    mSpecificRect.bottom);
+
+            mCancelButtonRect.set(
+                    mSpecificRect.right - buttonWidth * 2,
+                    mSpecificRect.bottom - buttonHeight,
+                    mSpecificRect.right - buttonWidth,
+                    mSpecificRect.bottom);
+        }
     }
 
     private void updateZoomButtonLocation() {
