@@ -1,12 +1,15 @@
 package me.next.drawrectview;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -21,6 +24,7 @@ public class PaletteView extends View {
     private static final String TAG = "PaletteView";
     private static final int BORDER_STROKE_WIDTH = 2;//dp
     private static final int MIN_AREA_HEIGHT = 10;//dp
+    private static final int DEFAULT_BUTTON_HEIGHT = 10;//dp
 
     private int downX;
     private int downY;
@@ -32,13 +36,21 @@ public class PaletteView extends View {
     private int lastMoveY;
 
     private boolean isTouchingSpecificArea = false; //拖拽选定视图标记位
+    private boolean showMenuBar = false;
     private int minHeight;
+    private int buttonHeight;
+    private int buttonWidth;
 
     Rect mSpecificRect = new Rect();
     Rect mSpecificBorderRect = new Rect();
     Paint mPaint = new Paint();
     Paint mSpecificAreaPaint = new Paint();
     Paint mSpecificAreaBorderPaint = new Paint();
+
+    RectF mOkButtonRect = new RectF();
+    RectF mCancelButtonRect = new RectF();
+    Bitmap okButtonBitmap;
+    Bitmap cancelButtonBitmap;
 
     public PaletteView(Context context) {
         this(context, null);
@@ -51,6 +63,14 @@ public class PaletteView extends View {
     public PaletteView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         minHeight = (int) ScreenUtils.dipToPixels(getContext(), MIN_AREA_HEIGHT);
+
+//        buttonHeight = (int) ScreenUtils.dipToPixels(getContext(), DEFAULT_BUTTON_HEIGHT);
+
+        okButtonBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.check_white);
+        cancelButtonBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.close_white);
+
+        buttonHeight = okButtonBitmap.getHeight();
+        buttonWidth = okButtonBitmap.getWidth();
     }
 
     @Override
@@ -88,6 +108,10 @@ public class PaletteView extends View {
         mSpecificAreaBorderPaint.setStrokeWidth(ScreenUtils.dipToPixels(getContext(), BORDER_STROKE_WIDTH));
         canvas.drawRect(mSpecificBorderRect, mSpecificAreaBorderPaint);
 
+        if (showMenuBar) {
+            canvas.drawBitmap(okButtonBitmap, null, mOkButtonRect, mPaint);
+        }
+
     }
 
     @Override
@@ -109,7 +133,7 @@ public class PaletteView extends View {
                 moveY = (int) event.getY();
 
                 Log.e(TAG, "moveX : " + moveX + " --- moveY : " + moveY);
-                if (isTouchingSpecificArea) {
+                if (isTouchingSpecificArea) { //移动绘制区域
 
                     deltaX = moveX - (lastMoveX == 0 ? downX : lastMoveX);
                     deltaY = moveY - (lastMoveY == 0 ? downY : lastMoveY);
@@ -122,16 +146,43 @@ public class PaletteView extends View {
                             mSpecificRect.top + deltaY,
                             mSpecificRect.right + deltaX,
                             mSpecificRect.bottom + deltaY);
+
+                    mOkButtonRect.set(
+                            mOkButtonRect.left + deltaX,
+                            mOkButtonRect.top + deltaY,
+                            mOkButtonRect.right + deltaX,
+                            mOkButtonRect.bottom + deltaY);
+
                 } else {
                     mSpecificRect.set(Math.min(downX, moveX), Math.min(downY, moveY), Math.max(downX, moveX), Math.max(downY, moveY));
                 }
                 break;
             case MotionEvent.ACTION_UP:
-                if (!isTouchingSpecificArea) { //处理点击事件 & 对绘制区域最小值进行限制
+
+                int targetRight = mSpecificRect.right;
+                int targetBottom = mSpecificRect.bottom;
+
+                if (!isTouchingSpecificArea) { //处理点击事件
+                    //对绘制区域最小值进行限制
                     if (moveX == 0 || moveY == 0
                             || Math.abs(moveX - downX) < minHeight || Math.abs(moveY - downY) < minHeight) {
                         mSpecificRect.set(0, 0, 0, 0);
+                        showMenuBar = false;
+                    } else {
+                        showMenuBar = true;
+                        mOkButtonRect.set(
+                                mSpecificRect.right - buttonWidth,
+                                mSpecificRect.bottom,
+                                mSpecificRect.right,
+                                mSpecificRect.bottom + buttonHeight);
                     }
+                } else { //移动绘制视图
+                    showMenuBar = true;
+                    mOkButtonRect.set(
+                            targetRight - buttonWidth,
+                            targetBottom,
+                            targetRight,
+                            targetBottom + buttonHeight);
                 }
                 isTouchingSpecificArea = false;
                 downX = 0;
