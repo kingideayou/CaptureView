@@ -25,6 +25,7 @@ public class PaletteView extends View {
     private static final int BORDER_STROKE_WIDTH = 2;//dp
     private static final int MIN_AREA_HEIGHT = 10;//dp
     private static final int DEFAULT_BUTTON_HEIGHT = 10;//dp
+    private static final int BUTTON_RADIUS = 10;//dp
 
     private int downX;
     private int downY;
@@ -52,6 +53,14 @@ public class PaletteView extends View {
     Bitmap okButtonBitmap;
     Bitmap cancelButtonBitmap;
 
+    //四个控制缩放按钮
+    RectF mLeftTopRect = new RectF();
+    RectF mRightTopRect = new RectF();
+    RectF mLeftBottomRect = new RectF();
+    RectF mRightBottomRect = new RectF();
+
+    private int mButtonRadius;
+
     public PaletteView(Context context) {
         this(context, null);
     }
@@ -63,6 +72,7 @@ public class PaletteView extends View {
     public PaletteView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         minHeight = (int) ScreenUtils.dipToPixels(getContext(), MIN_AREA_HEIGHT);
+        mButtonRadius = (int) ScreenUtils.dipToPixels(getContext(), BUTTON_RADIUS);
 
 //        buttonHeight = (int) ScreenUtils.dipToPixels(getContext(), DEFAULT_BUTTON_HEIGHT);
 
@@ -71,6 +81,7 @@ public class PaletteView extends View {
 
         buttonHeight = okButtonBitmap.getHeight();
         buttonWidth = okButtonBitmap.getWidth();
+
     }
 
     @Override
@@ -109,8 +120,13 @@ public class PaletteView extends View {
         canvas.drawRect(mSpecificBorderRect, mSpecificAreaBorderPaint);
 
         if (showMenuBar) {
-            canvas.drawBitmap(okButtonBitmap, null, mOkButtonRect, mPaint);
-            canvas.drawBitmap(cancelButtonBitmap, null, mCancelButtonRect, mPaint);
+            canvas.drawBitmap(okButtonBitmap, null, mOkButtonRect, mSpecificAreaBorderPaint);
+            canvas.drawBitmap(cancelButtonBitmap, null, mCancelButtonRect, mSpecificAreaBorderPaint);
+
+            canvas.drawOval(mLeftTopRect, mSpecificAreaBorderPaint);
+            canvas.drawOval(mRightTopRect, mSpecificAreaBorderPaint);
+            canvas.drawOval(mLeftBottomRect, mSpecificAreaBorderPaint);
+            canvas.drawOval(mRightBottomRect, mSpecificAreaBorderPaint);
         }
 
     }
@@ -128,6 +144,16 @@ public class PaletteView extends View {
                 //触摸在之前绘制的区域
                 Log.e(TAG, "SpecificRect : " + mSpecificRect.left + " - " + mSpecificRect.top + " - " + mSpecificRect.right + " - " + mSpecificRect.bottom);
                 isTouchingSpecificArea = mSpecificRect.contains(downX, downY);
+
+                if (!isTouchingSpecificArea) {
+                    mOkButtonRect.set(0, 0, 0, 0);
+                    mCancelButtonRect.set(0, 0, 0, 0);
+                    mLeftTopRect.set(0, 0, 0, 0);
+                    mRightTopRect.set(0, 0, 0, 0);
+                    mLeftBottomRect.set(0, 0, 0, 0);
+                    mRightBottomRect.set(0, 0, 0, 0);
+                }
+
                 break;
             case MotionEvent.ACTION_MOVE:
                 moveX = (int) event.getX();
@@ -160,6 +186,30 @@ public class PaletteView extends View {
                             mCancelButtonRect.right + deltaX,
                             mCancelButtonRect.bottom + deltaY);
 
+                    mLeftTopRect.set(
+                            mSpecificRect.left - mButtonRadius,
+                            mSpecificRect.top - mButtonRadius,
+                            mSpecificRect.left + mButtonRadius,
+                            mSpecificRect.top + mButtonRadius);
+
+                    mRightTopRect.set(
+                            mSpecificRect.right - mButtonRadius,
+                            mSpecificRect.top - mButtonRadius,
+                            mSpecificRect.right + mButtonRadius,
+                            mSpecificRect.top + mButtonRadius);
+
+                    mLeftBottomRect.set(
+                            mSpecificRect.left - mButtonRadius,
+                            mSpecificRect.bottom - mButtonRadius,
+                            mSpecificRect.left + mButtonRadius,
+                            mSpecificRect.bottom + mButtonRadius);
+
+                    mRightBottomRect.set(
+                            mSpecificRect.right - mButtonRadius,
+                            mSpecificRect.bottom - mButtonRadius,
+                            mSpecificRect.right + mButtonRadius,
+                            mSpecificRect.bottom + mButtonRadius);
+
                 } else {
                     mSpecificRect.set(Math.min(downX, moveX), Math.min(downY, moveY), Math.max(downX, moveX), Math.max(downY, moveY));
                 }
@@ -188,14 +238,34 @@ public class PaletteView extends View {
                                 mSpecificRect.bottom,
                                 mSpecificRect.right - buttonWidth,
                                 mSpecificRect.bottom + buttonHeight);
+
+                        mLeftTopRect.set(
+                                mSpecificRect.left - mButtonRadius,
+                                mSpecificRect.top - mButtonRadius,
+                                mSpecificRect.left + mButtonRadius,
+                                mSpecificRect.top + mButtonRadius);
+
+                        mRightTopRect.set(
+                                mSpecificRect.right - mButtonRadius,
+                                mSpecificRect.top - mButtonRadius,
+                                mSpecificRect.right + mButtonRadius,
+                                mSpecificRect.top + mButtonRadius);
+
+                        mLeftBottomRect.set(
+                                mSpecificRect.left - mButtonRadius,
+                                mSpecificRect.bottom - mButtonRadius,
+                                mSpecificRect.left + mButtonRadius,
+                                mSpecificRect.bottom + mButtonRadius);
+
+                        mRightBottomRect.set(
+                                mSpecificRect.right - mButtonRadius,
+                                mSpecificRect.bottom - mButtonRadius,
+                                mSpecificRect.right + mButtonRadius,
+                                mSpecificRect.bottom + mButtonRadius);
+
                     }
                 } else { //移动绘制视图
                     showMenuBar = true;
-                    mOkButtonRect.set(
-                            targetRight - buttonWidth,
-                            targetBottom,
-                            targetRight,
-                            targetBottom + buttonHeight);
                 }
                 isTouchingSpecificArea = false;
                 downX = 0;
