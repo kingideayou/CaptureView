@@ -220,12 +220,34 @@ public class PaletteView extends View {
                     lastMoveX = moveX;
                     lastMoveY = moveY;
 
-                    mSpecificRect.set(
-                            mSpecificRect.left + deltaX,
-                            mSpecificRect.top + deltaY,
-                            mSpecificRect.right + deltaX,
-                            mSpecificRect.bottom + deltaY);
+                    int targetLeft = mSpecificRect.left + deltaX;
+                    int targetTop = mSpecificRect.top + deltaY;
+                    int targetRight = mSpecificRect.right + deltaX;
+                    int targetBottom = mSpecificRect.bottom + deltaY;
 
+                    if (targetLeft <= 0 || targetRight >= mScreenWidth) {//接触到左右边缘,只处理上下滑动
+                        if (targetTop >= 0 && targetBottom <= mScreenHeight) {
+                            mSpecificRect.set(
+                                    mSpecificRect.left,
+                                    targetTop < 0 ? 0 : targetTop,
+                                    mSpecificRect.right,
+                                    targetBottom < 0 ? 0 : targetBottom);
+                        }
+                    } else if (targetTop <= 0 || targetBottom >= mScreenHeight) {
+                        if (targetLeft >= 0 && targetRight <= mScreenWidth) {
+                            mSpecificRect.set(
+                                    targetLeft < 0 ? 0 : targetLeft,
+                                    mSpecificRect.top,
+                                    targetRight < 0 ? 0 : targetRight,
+                                    mSpecificRect.bottom);
+                        }
+                    } else {
+                        mSpecificRect.set(
+                                targetLeft < 0 ? 0 : targetLeft,
+                                targetTop < 0 ? 0 : targetTop,
+                                targetRight < 0 ? 0 : targetRight,
+                                targetBottom < 0 ? 0 : targetBottom);
+                    }
                     updateMenuBarLocation();
                     updateZoomButtonLocation();
 
