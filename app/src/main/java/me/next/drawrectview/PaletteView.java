@@ -4,9 +4,9 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
@@ -29,6 +29,7 @@ public class PaletteView extends View {
     private static final int BORDER_STROKE_WIDTH = 2;//dp
     private static final int MIN_AREA_HEIGHT = 10;//dp
     private static final int DEFAULT_BUTTON_HEIGHT = 10;//dp
+    private static final int DEFAULT_MENU_BAR_MARGIN = 10;//dp
     private static final int BUTTON_RADIUS = 15;//dp
 
     private static final int BUTTON_NONE = -1;
@@ -69,6 +70,7 @@ public class PaletteView extends View {
     RectF mLeftBottomButtonRect = new RectF();
     RectF mRightBottomButtonRect = new RectF();
 
+    private int mMenuBarPadding;
     private int mButtonRadius;
     @CurrentButton
     private int currentControlButton = BUTTON_NONE;
@@ -101,6 +103,7 @@ public class PaletteView extends View {
         super(context, attrs, defStyleAttr);
         minHeight = (int) ScreenUtils.dipToPixels(getContext(), MIN_AREA_HEIGHT);
         mButtonRadius = (int) ScreenUtils.dipToPixels(getContext(), BUTTON_RADIUS);
+        mMenuBarPadding = (int) ScreenUtils.dipToPixels(getContext(), DEFAULT_MENU_BAR_MARGIN);
 
         okButtonBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.check_white);
         cancelButtonBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.close_white);
@@ -149,18 +152,22 @@ public class PaletteView extends View {
                 mSpecificRect.bottom + 1);
 
         mSpecificAreaBorderPaint.setStyle(Paint.Style.STROKE);
-        mSpecificAreaBorderPaint.setColor(Color.BLACK);
+        mSpecificAreaBorderPaint.setColor(getResources().getColor(R.color.color_button));
         mSpecificAreaBorderPaint.setStrokeWidth(ScreenUtils.dipToPixels(getContext(), BORDER_STROKE_WIDTH));
         canvas.drawRect(mSpecificBorderRect, mSpecificAreaBorderPaint);
 
         if (showMenuBar) {
-            canvas.drawBitmap(okButtonBitmap, null, mOkButtonRect, mSpecificAreaBorderPaint);
-            canvas.drawBitmap(cancelButtonBitmap, null, mCancelButtonRect, mSpecificAreaBorderPaint);
+            mSpecificAreaPaint.setXfermode(null);
+            mSpecificAreaPaint.setColor(getResources().getColor(R.color.color_button));
+            mSpecificAreaPaint.setColorFilter(new PorterDuffColorFilter(getResources().getColor(R.color.color_button), PorterDuff.Mode.SRC_ATOP));
 
-            canvas.drawOval(mLeftTopButtonRect, mSpecificAreaBorderPaint);
-            canvas.drawOval(mRightTopButtonRect, mSpecificAreaBorderPaint);
-            canvas.drawOval(mLeftBottomButtonRect, mSpecificAreaBorderPaint);
-            canvas.drawOval(mRightBottomButtonRect, mSpecificAreaBorderPaint);
+            canvas.drawBitmap(okButtonBitmap, null, mOkButtonRect, mSpecificAreaPaint);
+            canvas.drawBitmap(cancelButtonBitmap, null, mCancelButtonRect, mSpecificAreaPaint);
+
+            canvas.drawOval(mLeftTopButtonRect, mSpecificAreaPaint);
+            canvas.drawOval(mRightTopButtonRect, mSpecificAreaPaint);
+            canvas.drawOval(mLeftBottomButtonRect, mSpecificAreaPaint);
+            canvas.drawOval(mRightBottomButtonRect, mSpecificAreaPaint);
         }
 
     }
@@ -177,14 +184,8 @@ public class PaletteView extends View {
 
                 if (mOkButtonRect.contains(downX, downY)) {
                     isTouchingButton = true;
-                    if (mOnButtonClickListener != null) {
-                        mOnButtonClickListener.onConfirmClick(mSpecificRect);
-                    }
                 } else if (mCancelButtonRect.contains(downX, downY)) {
                     isTouchingButton = true;
-                    if (mOnButtonClickListener != null) {
-                        mOnButtonClickListener.onCancelClick();
-                    }
                 }
 
                 if (mLeftTopButtonRect.contains(downX, downY)) {
@@ -211,13 +212,8 @@ public class PaletteView extends View {
                 Log.e(TAG, "SpecificRect : " + mSpecificRect.left + " - " + mSpecificRect.top + " - " + mSpecificRect.right + " - " + mSpecificRect.bottom);
                 isTouchingSpecificArea = mSpecificRect.contains(downX, downY);
 
-                if (!isTouchingSpecificArea) {
-                    mOkButtonRect.set(0, 0, 0, 0);
-                    mCancelButtonRect.set(0, 0, 0, 0);
-                    mLeftTopButtonRect.set(0, 0, 0, 0);
-                    mRightTopButtonRect.set(0, 0, 0, 0);
-                    mLeftBottomButtonRect.set(0, 0, 0, 0);
-                    mRightBottomButtonRect.set(0, 0, 0, 0);
+                if (!isTouchingSpecificArea && !isTouchingButton) {
+                    removeMenuBarAndButtons();
                 }
 
                 break;
@@ -308,8 +304,18 @@ public class PaletteView extends View {
             case MotionEvent.ACTION_UP:
 
                 if (isTouchingButton) {
+                    if (mOkButtonRect.contains(downX, downY)) {
+                        if (mOnButtonClickListener != null) {
+                            mOnButtonClickListener.onConfirmClick(mSpecificRect);
+                        }
+                    } else if (mCancelButtonRect.contains(downX, downY)) {
+                        if (mOnButtonClickListener != null) {
+                            mOnButtonClickListener.onCancelClick();
+                        }
+                    }
                     isTouchingButton = false;
                     mSpecificRect.set(0, 0, 0, 0);
+                    removeMenuBarAndButtons();
                     break;
                 }
 
@@ -345,6 +351,15 @@ public class PaletteView extends View {
         return true;
     }
 
+    private void removeMenuBarAndButtons() {
+        mOkButtonRect.set(0, 0, 0, 0);
+        mCancelButtonRect.set(0, 0, 0, 0);
+        mLeftTopButtonRect.set(0, 0, 0, 0);
+        mRightTopButtonRect.set(0, 0, 0, 0);
+        mLeftBottomButtonRect.set(0, 0, 0, 0);
+        mRightBottomButtonRect.set(0, 0, 0, 0);
+    }
+
     private void updateMenuBarLocation() {
 
         int topLocation = mSpecificRect.top;
@@ -352,39 +367,39 @@ public class PaletteView extends View {
 
         if (mScreenHeight - bottomLocation >= buttonHeight) {//底部有足够空间
             mOkButtonRect.set(
-                    mSpecificRect.right - buttonWidth,
+                    mSpecificRect.right - buttonWidth - mMenuBarPadding,
                     mSpecificRect.bottom,
-                    mSpecificRect.right,
+                    mSpecificRect.right - mMenuBarPadding,
                     mSpecificRect.bottom + buttonHeight);
 
             mCancelButtonRect.set(
-                    mSpecificRect.right - buttonWidth * 2,
+                    mSpecificRect.right - buttonWidth * 2 - mMenuBarPadding,
                     mSpecificRect.bottom,
-                    mSpecificRect.right - buttonWidth,
+                    mSpecificRect.right - buttonWidth - mMenuBarPadding,
                     mSpecificRect.bottom + buttonHeight);
         } else if (topLocation > buttonHeight) {
             mOkButtonRect.set( //顶部有足够空间
-                    mSpecificRect.right - buttonWidth,
+                    mSpecificRect.right - buttonWidth - mMenuBarPadding,
                     mSpecificRect.top - buttonHeight,
-                    mSpecificRect.right,
+                    mSpecificRect.right - mMenuBarPadding,
                     mSpecificRect.top);
 
             mCancelButtonRect.set(
-                    mSpecificRect.right - buttonWidth * 2,
+                    mSpecificRect.right - buttonWidth * 2 - mMenuBarPadding,
                     mSpecificRect.top - buttonHeight,
-                    mSpecificRect.right - buttonWidth,
+                    mSpecificRect.right - buttonWidth - mMenuBarPadding,
                     mSpecificRect.top);
         } else {
             mOkButtonRect.set(
-                    mSpecificRect.right - buttonWidth,
+                    mSpecificRect.right - buttonWidth - mMenuBarPadding,
                     mSpecificRect.bottom - buttonHeight,
-                    mSpecificRect.right,
+                    mSpecificRect.right - mMenuBarPadding,
                     mSpecificRect.bottom);
 
             mCancelButtonRect.set(
-                    mSpecificRect.right - buttonWidth * 2,
+                    mSpecificRect.right - buttonWidth * 2 - mMenuBarPadding,
                     mSpecificRect.bottom - buttonHeight,
-                    mSpecificRect.right - buttonWidth,
+                    mSpecificRect.right - buttonWidth - mMenuBarPadding,
                     mSpecificRect.bottom);
         }
     }
