@@ -371,12 +371,16 @@ public class PaletteView extends View {
     }
 
     private void removeMenuBarAndButtons() {
-        mOkButtonRect.set(0, 0, 0, 0);
-        mCancelButtonRect.set(0, 0, 0, 0);
-        mLeftTopButtonRect.set(0, 0, 0, 0);
-        mRightTopButtonRect.set(0, 0, 0, 0);
-        mLeftBottomButtonRect.set(0, 0, 0, 0);
-        mRightBottomButtonRect.set(0, 0, 0, 0);
+        resetRect(mOkButtonRect);
+        resetRect(mCancelButtonRect);
+        resetRect(mLeftTopButtonRect);
+        resetRect(mRightTopButtonRect);
+        resetRect(mLeftBottomButtonRect);
+        resetRect(mRightBottomButtonRect);
+    }
+
+    private void resetRect(RectF rectF) {
+        rectF.set(0, 0, 0, 0);
     }
 
     private void updateMenuBarLocation() {
