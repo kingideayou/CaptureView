@@ -82,6 +82,9 @@ public class PaletteView extends View {
     int mScreenHeight;
     int mScreenWidth;
 
+    boolean isTouchingButton;
+    private OnButtonClickListener mOnButtonClickListener;
+
     @IntDef({BUTTON_NONE, BUTTON_LEFT_TOP, BUTTON_RIGHT_TOP, BUTTON_LEFT_BOTTOM, BUTTON_RIGHT_BOTTOM})
     @Retention(RetentionPolicy.SOURCE)
     public @interface CurrentButton {}
@@ -172,6 +175,18 @@ public class PaletteView extends View {
                 moveY = 0;
                 Log.e(TAG, "downX : " + downX + " --- downY : " + downY);
 
+                if (mOkButtonRect.contains(downX, downY)) {
+                    isTouchingButton = true;
+                    if (mOnButtonClickListener != null) {
+                        mOnButtonClickListener.onConfirmClick(mSpecificRect);
+                    }
+                } else if (mCancelButtonRect.contains(downX, downY)) {
+                    isTouchingButton = true;
+                    if (mOnButtonClickListener != null) {
+                        mOnButtonClickListener.onCancelClick();
+                    }
+                }
+
                 if (mLeftTopButtonRect.contains(downX, downY)) {
                     currentControlButton = BUTTON_LEFT_TOP;
                     saveCurrentLocation();
@@ -207,6 +222,11 @@ public class PaletteView extends View {
 
                 break;
             case MotionEvent.ACTION_MOVE:
+
+                if (isTouchingButton) {
+                    break;
+                }
+
                 moveX = (int) event.getX();
                 moveY = (int) event.getY();
 
@@ -287,6 +307,12 @@ public class PaletteView extends View {
                 break;
             case MotionEvent.ACTION_UP:
 
+                if (isTouchingButton) {
+                    isTouchingButton = false;
+                    mSpecificRect.set(0, 0, 0, 0);
+                    break;
+                }
+
                 if (!isTouchingSpecificArea) { //处理点击事件
                     //对绘制区域最小值进行限制
                     if (currentControlButton == BUTTON_NONE &&
@@ -312,6 +338,7 @@ public class PaletteView extends View {
                 lastMoveY = 0;
                 break;
             case MotionEvent.ACTION_CANCEL:
+                isTouchingButton = false;
                 break;
         }
         postInvalidate();
@@ -393,5 +420,9 @@ public class PaletteView extends View {
         currentTop = mSpecificRect.top;
         currentRight = mSpecificRect.right;
         currentBottom = mSpecificRect.bottom;
+    }
+
+    public void setOnButtonClickListener(OnButtonClickListener onButtonClickListener) {
+        mOnButtonClickListener = onButtonClickListener;
     }
 }
