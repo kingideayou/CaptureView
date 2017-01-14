@@ -219,12 +219,12 @@ public class PaletteView extends View {
                 break;
             case MotionEvent.ACTION_MOVE:
 
+                moveX = (int) event.getX();
+                moveY = (int) event.getY();
+
                 if (isTouchingButton) {
                     break;
                 }
-
-                moveX = (int) event.getX();
-                moveY = (int) event.getY();
 
                 Log.e(TAG, "moveX : " + moveX + " --- moveY : " + moveY);
                 Log.e(TAG, "isTouchingSpecificArea : " + isTouchingSpecificArea);
@@ -304,18 +304,37 @@ public class PaletteView extends View {
             case MotionEvent.ACTION_UP:
 
                 if (isTouchingButton) {
-                    if (mOkButtonRect.contains(downX, downY)) {
-                        if (mOnButtonClickListener != null) {
-                            mOnButtonClickListener.onConfirmClick(mSpecificRect);
+                    if (moveX == 0 && moveY == 0) { //点击按钮后手指未移动
+                        if (mOkButtonRect.contains(downX, downY)) {
+                            if (mOnButtonClickListener != null) {
+                                mOnButtonClickListener.onConfirmClick(mSpecificRect);
+                            }
+                        } else if (mCancelButtonRect.contains(downX, downY)) {
+                            if (mOnButtonClickListener != null) {
+                                mOnButtonClickListener.onCancelClick();
+                            }
+                        } else {
+                            isTouchingButton = false;
                         }
-                    } else if (mCancelButtonRect.contains(downX, downY)) {
-                        if (mOnButtonClickListener != null) {
-                            mOnButtonClickListener.onCancelClick();
+                    } else { //点击按钮后手指移动
+                        if (mOkButtonRect.contains(moveX, moveY)) {
+                            if (mOnButtonClickListener != null) {
+                                mOnButtonClickListener.onConfirmClick(mSpecificRect);
+                            }
+                        } else if (mCancelButtonRect.contains(moveX, moveY)) {
+                            if (mOnButtonClickListener != null) {
+                                mOnButtonClickListener.onCancelClick();
+                            }
+                        } else {
+                            isTouchingButton = false;
                         }
                     }
+
+                    if (isTouchingButton) {
+                        mSpecificRect.set(0, 0, 0, 0);
+                        removeMenuBarAndButtons();
+                    }
                     isTouchingButton = false;
-                    mSpecificRect.set(0, 0, 0, 0);
-                    removeMenuBarAndButtons();
                     break;
                 }
 
