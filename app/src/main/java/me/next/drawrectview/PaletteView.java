@@ -38,6 +38,9 @@ public class PaletteView extends View {
     private static final int BUTTON_LEFT_BOTTOM = 3;
     private static final int BUTTON_RIGHT_BOTTOM = 4;
 
+    private static final int BUTTON_CANCEL = 5;
+    private static final int BUTTON_CONFIRM = 6;
+
     private int downX;
     private int downY;
     private int moveX;
@@ -85,6 +88,7 @@ public class PaletteView extends View {
     int mScreenWidth;
 
     boolean isTouchingButton;
+    private int currentTouchButton = BUTTON_NONE;
     private OnButtonClickListener mOnButtonClickListener;
 
     @IntDef({BUTTON_NONE, BUTTON_LEFT_TOP, BUTTON_RIGHT_TOP, BUTTON_LEFT_BOTTOM, BUTTON_RIGHT_BOTTOM})
@@ -184,8 +188,12 @@ public class PaletteView extends View {
 
                 if (mOkButtonRect.contains(downX, downY)) {
                     isTouchingButton = true;
+                    currentTouchButton = BUTTON_CONFIRM;
                 } else if (mCancelButtonRect.contains(downX, downY)) {
                     isTouchingButton = true;
+                    currentTouchButton = BUTTON_CANCEL;
+                } else {
+                    currentTouchButton = BUTTON_NONE;
                 }
 
                 if (mLeftTopButtonRect.contains(downX, downY)) {
@@ -305,11 +313,11 @@ public class PaletteView extends View {
 
                 if (isTouchingButton) {
                     if (moveX == 0 && moveY == 0) { //点击按钮后手指未移动
-                        if (mOkButtonRect.contains(downX, downY)) {
+                        if (currentTouchButton == BUTTON_CONFIRM) {
                             if (mOnButtonClickListener != null) {
                                 mOnButtonClickListener.onConfirmClick(mSpecificRect);
                             }
-                        } else if (mCancelButtonRect.contains(downX, downY)) {
+                        } else if (currentTouchButton == BUTTON_CANCEL) {
                             if (mOnButtonClickListener != null) {
                                 mOnButtonClickListener.onCancelClick();
                             }
@@ -317,11 +325,12 @@ public class PaletteView extends View {
                             isTouchingButton = false;
                         }
                     } else { //点击按钮后手指移动
-                        if (mOkButtonRect.contains(moveX, moveY)) {
+                        //currentTouchButton == BUTTON_CONFIRM 防止抬起时触发其他按钮点击事件
+                        if (currentTouchButton == BUTTON_CONFIRM && mOkButtonRect.contains(moveX, moveY)) {
                             if (mOnButtonClickListener != null) {
                                 mOnButtonClickListener.onConfirmClick(mSpecificRect);
                             }
-                        } else if (mCancelButtonRect.contains(moveX, moveY)) {
+                        } else if (currentTouchButton == BUTTON_CANCEL && mCancelButtonRect.contains(moveX, moveY)) {
                             if (mOnButtonClickListener != null) {
                                 mOnButtonClickListener.onCancelClick();
                             }
