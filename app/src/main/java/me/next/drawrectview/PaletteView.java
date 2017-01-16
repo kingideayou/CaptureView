@@ -426,21 +426,21 @@ public class PaletteView extends View {
                         mSpecificRect.right - buttonWidth - mMenuBarPadding :
                         leftLocation + mMenuBarPadding + buttonWidth;
 
-        if (mScreenHeight - bottomLocation >= buttonHeight) {//底部有足够空间
+        if (mScreenHeight - bottomLocation >= buttonHeight + mButtonRadius) {//底部有足够空间
 
-            mOkButtonRect.top = bottomLocation;
-            mOkButtonRect.bottom = bottomLocation + buttonHeight;
+            mOkButtonRect.top = bottomLocation + mButtonRadius;
+            mOkButtonRect.bottom = bottomLocation + buttonHeight + mButtonRadius;
 
-            mCancelButtonRect.top = bottomLocation;
-            mCancelButtonRect.bottom = bottomLocation + buttonHeight;
+            mCancelButtonRect.top = bottomLocation + mButtonRadius;
+            mCancelButtonRect.bottom = bottomLocation + buttonHeight + mButtonRadius;
 
-        } else if (topLocation > buttonHeight) {
+        } else if (topLocation > buttonHeight + mButtonRadius) {
 
-            mOkButtonRect.top = topLocation - buttonHeight;
-            mOkButtonRect.bottom = topLocation;
+            mOkButtonRect.top = topLocation - buttonHeight - mButtonRadius;
+            mOkButtonRect.bottom = topLocation - mButtonRadius;
 
-            mCancelButtonRect.top = topLocation - buttonHeight;
-            mCancelButtonRect.bottom = topLocation;
+            mCancelButtonRect.top = topLocation - buttonHeight - mButtonRadius;
+            mCancelButtonRect.bottom = topLocation - mButtonRadius;
 
         } else {
 
