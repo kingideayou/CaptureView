@@ -74,6 +74,7 @@ public class PaletteView extends View {
     RectF mRightBottomButtonRect = new RectF();
 
     private int mMenuBarPadding;
+    private int mMenuBarWidth;
     private int mButtonRadius;
     @CurrentButton
     private int currentControlButton = BUTTON_NONE;
@@ -114,6 +115,8 @@ public class PaletteView extends View {
 
         buttonHeight = okButtonBitmap.getHeight();
         buttonWidth = okButtonBitmap.getWidth();
+
+        mMenuBarWidth = mMenuBarPadding + buttonHeight * 2;
 
     }
 
@@ -397,42 +400,56 @@ public class PaletteView extends View {
         int topLocation = mSpecificRect.top;
         int bottomLocation = mSpecificRect.bottom;
 
+        int leftLocation = mSpecificRect.left;
+        int rightLocation = mSpecificRect.right;
+
+        boolean startWithRight = true;       // MenuBar 从右向左绘制
+        if (rightLocation < mMenuBarWidth) { //绘制矩形的空间小于 MenuBar 的宽度
+            startWithRight = false;
+        }
+
+        mOkButtonRect.left =
+                startWithRight ?
+                        mSpecificRect.right - buttonWidth - mMenuBarPadding :
+                        leftLocation + mMenuBarPadding + buttonWidth;
+        mOkButtonRect.right =
+                startWithRight ?
+                        mSpecificRect.right - mMenuBarPadding :
+                        leftLocation + mMenuBarPadding + buttonWidth * 2;
+
+        mCancelButtonRect.left =
+                startWithRight ?
+                        mSpecificRect.right - buttonWidth * 2 - mMenuBarPadding :
+                        leftLocation + mMenuBarPadding;
+        mCancelButtonRect.right =
+                startWithRight ?
+                        mSpecificRect.right - buttonWidth - mMenuBarPadding :
+                        leftLocation + mMenuBarPadding + buttonWidth;
+
         if (mScreenHeight - bottomLocation >= buttonHeight) {//底部有足够空间
-            mOkButtonRect.set(
-                    mSpecificRect.right - buttonWidth - mMenuBarPadding,
-                    mSpecificRect.bottom,
-                    mSpecificRect.right - mMenuBarPadding,
-                    mSpecificRect.bottom + buttonHeight);
 
-            mCancelButtonRect.set(
-                    mSpecificRect.right - buttonWidth * 2 - mMenuBarPadding,
-                    mSpecificRect.bottom,
-                    mSpecificRect.right - buttonWidth - mMenuBarPadding,
-                    mSpecificRect.bottom + buttonHeight);
+            mOkButtonRect.top = bottomLocation;
+            mOkButtonRect.bottom = bottomLocation + buttonHeight;
+
+            mCancelButtonRect.top = bottomLocation;
+            mCancelButtonRect.bottom = bottomLocation + buttonHeight;
+
         } else if (topLocation > buttonHeight) {
-            mOkButtonRect.set( //顶部有足够空间
-                    mSpecificRect.right - buttonWidth - mMenuBarPadding,
-                    mSpecificRect.top - buttonHeight,
-                    mSpecificRect.right - mMenuBarPadding,
-                    mSpecificRect.top);
 
-            mCancelButtonRect.set(
-                    mSpecificRect.right - buttonWidth * 2 - mMenuBarPadding,
-                    mSpecificRect.top - buttonHeight,
-                    mSpecificRect.right - buttonWidth - mMenuBarPadding,
-                    mSpecificRect.top);
+            mOkButtonRect.top = topLocation - buttonHeight;
+            mOkButtonRect.bottom = topLocation;
+
+            mCancelButtonRect.top = topLocation - buttonHeight;
+            mCancelButtonRect.bottom = topLocation;
+
         } else {
-            mOkButtonRect.set(
-                    mSpecificRect.right - buttonWidth - mMenuBarPadding,
-                    mSpecificRect.bottom - buttonHeight,
-                    mSpecificRect.right - mMenuBarPadding,
-                    mSpecificRect.bottom);
 
-            mCancelButtonRect.set(
-                    mSpecificRect.right - buttonWidth * 2 - mMenuBarPadding,
-                    mSpecificRect.bottom - buttonHeight,
-                    mSpecificRect.right - buttonWidth - mMenuBarPadding,
-                    mSpecificRect.bottom);
+            mOkButtonRect.top = bottomLocation - buttonHeight;
+            mOkButtonRect.bottom = bottomLocation;
+
+            mCancelButtonRect.top = bottomLocation - buttonHeight;
+            mCancelButtonRect.bottom = bottomLocation;
+
         }
     }
 
