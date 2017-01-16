@@ -23,7 +23,7 @@ import java.lang.annotation.RetentionPolicy;
  * Created by NeXT on 17/1/11.
  */
 
-public class PaletteView extends View {
+public class CaptureView extends View {
 
     private static final String TAG = "PaletteView";
     private static final int BORDER_STROKE_WIDTH = 2;//dp
@@ -96,15 +96,15 @@ public class PaletteView extends View {
     @Retention(RetentionPolicy.SOURCE)
     public @interface CurrentButton {}
 
-    public PaletteView(Context context) {
+    public CaptureView(Context context) {
         this(context, null);
     }
 
-    public PaletteView(Context context, AttributeSet attrs) {
+    public CaptureView(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public PaletteView(Context context, AttributeSet attrs, int defStyleAttr) {
+    public CaptureView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         minHeight = (int) ScreenUtils.dipToPixels(getContext(), MIN_AREA_HEIGHT);
         mButtonRadius = (int) ScreenUtils.dipToPixels(getContext(), BUTTON_RADIUS);

@@ -20,8 +20,8 @@ public class MainActivity extends AppCompatActivity {
                             | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
         }
 
-        PaletteView paletteView = (PaletteView) findViewById(R.id.pv_board);
-        paletteView.setOnButtonClickListener(new OnButtonClickListener() {
+        CaptureView captureView = (CaptureView) findViewById(R.id.pv_board);
+        captureView.setOnButtonClickListener(new OnButtonClickListener() {
             @Override
             public void onConfirmClick(Rect rect) {
                 Toast.makeText(getApplicationContext(), "选中区域 : " + rect.toString(), Toast.LENGTH_SHORT).show();
