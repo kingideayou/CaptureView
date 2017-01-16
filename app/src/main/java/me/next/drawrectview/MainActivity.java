@@ -7,6 +7,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Toast;
 
+import me.next.captureview.CaptureView;
+import me.next.captureview.OnButtonClickListener;
+
 public class MainActivity extends AppCompatActivity {
 
     @Override

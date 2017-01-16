@@ -1,4 +1,4 @@
-package me.next.drawrectview;
+package me.next.captureview;
 
 import android.graphics.Rect;
 
